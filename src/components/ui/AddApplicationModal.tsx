@@ -61,7 +61,7 @@ export function AddApplicationModal({ onAddJob }: AddApplicationModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-    <DialogTrigger className="flex items-center gap-1.5 bg-slate-900 text-white px-3.5 py-2 rounded-lg text-xs font-mono hover:bg-slate-800 transition-colors shadow-sm cursor-pointer">
+  <DialogTrigger className="flex items-center gap-1.5 bg-slate-900 text-white px-3.5 py-2 rounded-lg text-xs font-mono hover:bg-slate-800 transition-colors shadow-sm cursor-pointer">
     <Plus className="w-3.5 h-3.5" />
     Add Application
       </DialogTrigger>
