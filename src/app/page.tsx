@@ -1,216 +1,214 @@
-"use client";
+import Link from "next/link";
+import { ChevronDown } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getSessionUserId } from "@/lib/session";
+import { AuthButtons } from "@/components/auth/AuthButtons";
+import { LogoReveal } from "@/components/LogoReveal";
+import { RocketBackground } from "@/components/RocketBackground";
 
-import { useState } from "react";
-import Image from "next/image";
-import { Search, ExternalLink, Trash2 } from "lucide-react";
-import { AddApplicationModal } from "@/components/ui/AddApplicationModal";
-import { JobApplication, JobStatus, JobPriority } from "@/types/job";
-import { INITIAL_JOBS } from "@/data/initialJobs";
+// Stage colours borrowed from the dashboard
+const STAGES = [
+  {
+    label: "Applied",
+    pill: "bg-[#d9f0e1] text-emerald-800",
+    dot: "bg-emerald-500",
+  },
+  {
+    label: "Interviewing",
+    pill: "bg-[#fef3c7] text-amber-800",
+    dot: "bg-amber-500",
+  },
+  { label: "Offered", pill: "bg-[#dbeafe] text-blue-800", dot: "bg-blue-500" },
+  { label: "Rejected", pill: "bg-rose-100 text-rose-800", dot: "bg-rose-500" },
+];
 
-export default function Dashboard() {
-  const [jobs, setJobs] = useState<JobApplication[]>(INITIAL_JOBS);
-  const [activeTab, setActiveTab] = useState<"ALL" | JobStatus>("ALL");
+const FEATURES = [
+  {
+    title: "See where each application stands",
+    body: "Sort every role into Applied, Interviewing, Offered or Rejected, then filter the list by stage in one click.",
+  },
+  {
+    title: "Know what to do next",
+    body: "Set a priority, note the interview date and keep the job link on the same row, so nothing gets lost in an old email.",
+  },
+  {
+    title: "Your list stays private",
+    body: "Sign up with your email and a strong password. Your applications are saved to your account and only you can open them.",
+  },
+];
 
-  const handleAddJob = (newJob: JobApplication) => {
-    setJobs((prev) => [newJob, ...prev]);
-  };
+// PSA Labor Force Survey, unemployment rate (%) by month, 2026
+const PH_RATES = [
+  { month: "Feb", rate: 5.1 },
+  { month: "Mar", rate: 5.0 },
+  { month: "Apr", rate: 4.7 },
+  { month: "May", rate: 4.8 },
+  { month: "Jun", rate: 4.9 },
+  { month: "Jul", rate: 6.0 },
+];
+const PH_CHART_MAX = 6.5;
 
-  const handleDelete = (id: string) => {
-    setJobs((prev) => prev.filter((j) => j.id !== id));
-  };
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900";
 
-  const filteredJobs = jobs.filter((job) =>
-    activeTab === "ALL" ? true : job.stage === activeTab
-  );
-
-  const getPriorityStyle = (priority?: JobPriority) => {
-    switch (priority) {
-      case "High":
-        return "bg-rose-100 text-rose-700";
-      case "Medium":
-        return "bg-amber-100 text-amber-700";
-      case "Low":
-        return "bg-slate-100 text-slate-600";
-      default:
-        return "bg-slate-100 text-slate-600";
-    }
-  };
-
-  const getStageStyle = (stage: JobStatus) => {
-    switch (stage) {
-      case "APPLIED":
-        return "bg-[#d9f0e1] text-emerald-800";
-      case "INTERVIEWING":
-        return "bg-[#fef3c7] text-amber-800";
-      case "OFFERED":
-        return "bg-[#dbeafe] text-blue-800";
-      case "REJECTED":
-        return "bg-rose-100 text-rose-800";
-      default:
-        return "bg-slate-100 text-slate-700";
-    }
-  };
+export default async function Home({ searchParams }: PageProps<"/">) {
+  if (await getSessionUserId()) redirect("/dashboard");
+  const { auth } = await searchParams;
+  const initialMode = auth === "login" || auth === "signup" ? auth : null;
 
   return (
-    <div className="min-h-screen bg-[#faf7f2] font-mono text-slate-800 pb-16">
-      {/* 1. Header Banner */}
-      <div className="w-full bg-[#d3bc9d] border-b border-[#c2aa8b] overflow-hidden flex justify-center">
-        <div className="relative w-full h-48 sm:h-56 md:h-64 lg:h-72">
-          <Image
-            src="/img.png"
-            alt="Dashboard Banner"
-            fill
-            quality={100}
-            unoptimized
-            className="object-cover object-center"
-            priority
-          />
-        </div>
-      </div>
+    <div className="relative min-h-screen bg-[#faf7f2] font-mono text-slate-800">
+      <RocketBackground />
+      {/* Same banner the dashboard opens with */}
 
-      {/* Main Container */}
-      <div className="max-w-5xl mx-auto px-6 mt-8 space-y-6">
-        {/* Title and Pop-Up Modal Trigger */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Job Application Dashboard
-          </h1>
-          <AddApplicationModal onAddJob={handleAddJob} />
-        </div>
+      <div className="relative z-10 max-w-[90rem] mx-auto px-4 sm:px-8 lg:px-12">
+        <header className="flex items-center justify-between py-5">
+          <Link
+            href="/"
+            className={`text-xl font-bold tracking-tight text-slate-900 ${focusRing}`}
+          >
+            Jobbie
+          </Link>
+          <AuthButtons initialMode={initialMode} />
+        </header>
 
-        {/* Application Tracker Card */}
-        <div className="bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-5 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-900">Application tracker</h2>
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <Search className="w-4 h-4 cursor-pointer hover:text-slate-600" />
+        <main>
+          <section className="min-h-[calc(100svh-5rem)] pt-14 lg:pt-0 pb-14 grid lg:grid-cols-[1fr_auto] gap-8 lg:gap-14 items-center">
+            {/* 4.5rem = width of the "Jobbie" wordmark (6 mono chars at text-xl), so the text starts where it ends */}
+            <div className="sm:pl-[4.5rem]">
+              <h1 className="sm:ml-10 text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 leading-[1.1] max-w-[18ch] text-balance">
+                Every application, one clear list.
+              </h1>
+              <p className="mt-5 sm:ml-10 text-sm leading-relaxed text-slate-600 max-w-[52ch]">
+                Jobbie keeps your job search in one place. Add each role, track
+                its stage, and keep interview dates and job links right where
+                you can see them.
+              </p>
+              <ul
+                aria-label="Application stages"
+                className="mt-6 sm:ml-10 flex flex-wrap gap-2 text-[11px] font-semibold"
+              >
+                {STAGES.map((st) => (
+                  <li
+                    key={st.label}
+                    className={`px-2.5 py-1 rounded-md flex items-center gap-1.5 ${st.pill}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                    {st.label}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="#about"
+                className="mt-8 sm:ml-10 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+              >
+                About Jobbie
+                <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
+              </a>
             </div>
-          </div>
+            <LogoReveal />
+          </section>
 
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <button
-              onClick={() => setActiveTab("ALL")}
-              className={`px-2.5 py-1 rounded-md border transition-colors ${
-                activeTab === "ALL"
-                  ? "bg-white border-slate-300 font-semibold"
-                  : "bg-transparent border-transparent text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              All applications
-            </button>
-            <button
-              onClick={() => setActiveTab("APPLIED")}
-              className={`px-2.5 py-1 rounded-md flex items-center gap-1 border ${
-                activeTab === "APPLIED"
-                  ? "bg-[#d9f0e1] text-emerald-800 border-emerald-300"
-                  : "bg-[#e8f3ec] text-emerald-700 border-transparent"
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Applied ({jobs.filter((j) => j.stage === "APPLIED").length})
-            </button>
-            <button
-              onClick={() => setActiveTab("INTERVIEWING")}
-              className={`px-2.5 py-1 rounded-md flex items-center gap-1 border ${
-                activeTab === "INTERVIEWING"
-                  ? "bg-[#fef3c7] text-amber-800 border-amber-300"
-                  : "bg-[#fef9c3] text-amber-700 border-transparent"
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              Interviewing ({jobs.filter((j) => j.stage === "INTERVIEWING").length})
-            </button>
-            <button
-              onClick={() => setActiveTab("OFFERED")}
-              className={`px-2.5 py-1 rounded-md flex items-center gap-1 border ${
-                activeTab === "OFFERED"
-                  ? "bg-[#dbeafe] text-blue-800 border-blue-300"
-                  : "bg-[#eff6ff] text-blue-700 border-transparent"
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              Offered ({jobs.filter((j) => j.stage === "OFFERED").length})
-            </button>
-          </div>
+          {/* Same side margins as the hero: left = headline start (4.5rem + 2.5rem), right = logo's edge */}
+          <section id="about" className="scroll-mt-6 pt-12 lg:pt-16 pb-24 sm:pl-28 lg:pr-16">
+            <div className="flex items-center gap-5">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                ABOUT
+              </h2>
+              <hr className="flex-1 border-0 h-0.5 rounded-full bg-[#d9c7b9]" />
+            </div>
 
-          {/* Borderless Table View */}
-          <div className="overflow-x-auto pt-2">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="text-slate-400 border-b border-[#e8d8ce]/60 pb-2">
-                  <th className="py-2 px-3 font-normal">Position</th>
-                  <th className="py-2 px-3 font-normal">Company Name</th>
-                  <th className="py-2 px-3 font-normal">Stage</th>
-                  <th className="py-2 px-3 font-normal">Priority</th>
-                  <th className="py-2 px-3 font-normal">Interview Date</th>
-                  <th className="py-2 px-3 font-normal">Job Link</th>
-                  <th className="py-2 px-1 text-right"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-transparent">
-                {filteredJobs.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-8 text-slate-400">
-                      No job applications listed yet.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredJobs.map((job) => (
-                    <tr
-                      key={job.id}
-                      className="hover:bg-white/40 transition-colors rounded-lg group"
-                    >
-                      <td className="py-3 px-3 font-bold text-slate-900">{job.position}</td>
-                      <td className="py-3 px-3 text-slate-700">{job.company}</td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${getStageStyle(
-                            job.stage
-                          )}`}
-                        >
-                          {job.stage}
+            <div className="mt-10 grid md:grid-cols-3 gap-8">
+              {FEATURES.map((f) => (
+                <div key={f.title}>
+                  <h3 className="text-base font-bold text-slate-900 leading-snug">
+                    {f.title}
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                    {f.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Why it matters: unemployment in the Philippines */}
+            <div className="mt-20 grid lg:grid-cols-[1fr_minmax(0,26rem)] gap-10 lg:gap-16 items-center">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-tight max-w-[22ch] text-balance">
+                  Millions of Filipinos are looking for work right now.
+                </h3>
+                <p className="mt-6 text-sm leading-relaxed text-slate-700 max-w-[56ch]">
+                  In July 2026 the unemployment rate in the Philippines reached{" "}
+                  <strong className="text-slate-900">6.0%</strong>, about{" "}
+                  <strong className="text-slate-900">3.14 million people</strong> without a
+                  job. A year earlier it was 5.3%. It is the highest rate in more than four
+                  years, and much of the rise came from fresh graduates starting their job
+                  search.
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-slate-600 max-w-[56ch]">
+                  When you are sending out this many applications, it is easy to lose track
+                  of who you contacted and when to follow up. That is why Jobbie exists: one
+                  place for unemployed jobseekers to keep every application, its stage,
+                  the interview date and the job link, so you can spend your energy on the
+                  search instead of remembering it.
+                </p>
+              </div>
+
+              <figure className="bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-5 shadow-sm">
+                <figcaption className="text-xs font-bold text-slate-900">
+                  Unemployment rate in the Philippines, 2026
+                </figcaption>
+                <div
+                  role="img"
+                  aria-label={`Unemployment rate by month: ${PH_RATES.map((r) => `${r.month} ${r.rate.toFixed(1)} percent`).join(", ")}.`}
+                  className="mt-5 flex items-end gap-2 sm:gap-3 h-44 border-b border-[#d9c7b9]"
+                >
+                  {PH_RATES.map((r) => {
+                    const latest = r.month === "Jul";
+                    return (
+                      <div
+                        key={r.month}
+                        aria-hidden="true"
+                        className="flex-1 h-full flex flex-col justify-end items-center gap-1"
+                      >
+                        <span className={`text-[11px] ${latest ? "font-bold text-slate-900" : "text-slate-500"}`}>
+                          {r.rate.toFixed(1)}%
                         </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-medium ${getPriorityStyle(
-                            job.priority
-                          )}`}
-                        >
-                          {job.priority || "Medium"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-slate-500">{job.interviewDate || "N/A"}</td>
-                      <td className="py-3 px-3">
-                        {job.jobLink ? (
-                          <a
-                            href={job.jobLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 underline underline-offset-2"
-                          >
-                            Link <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ) : (
-                          <span className="text-slate-300">—</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-1 text-right">
-                        <button
-                          onClick={() => handleDelete(job.id)}
-                          className="opacity-0 group-hover:opacity-100 text-rose-500 hover:text-rose-700 transition-opacity p-1"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                        <div
+                          className={`w-full rounded-t-md ${latest ? "bg-[#ff9433]" : "bg-[#d3bc9d]"}`}
+                          style={{ height: `${(r.rate / PH_CHART_MAX) * 82}%` }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div aria-hidden="true" className="mt-2 flex gap-2 sm:gap-3">
+                  {PH_RATES.map((r) => (
+                    <span key={r.month} className="flex-1 text-center text-[11px] text-slate-500">
+                      {r.month}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-4 text-[11px] leading-relaxed text-slate-500">
+                  Source:{" "}
+                  <a
+                    href="https://psa.gov.ph/statistics/labor-force-survey"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`underline underline-offset-2 hover:text-slate-800 ${focusRing}`}
+                  >
+                    Philippine Statistics Authority, Labor Force Survey
+                  </a>
+                  .
+                </p>
+              </figure>
+            </div>
+          </section>
+        </main>
+
+        <footer className="border-t border-[#e8d8ce] py-6 text-center text-[11px] text-slate-500">
+          Jobbie, your job search companion.
+        </footer>
       </div>
     </div>
   );

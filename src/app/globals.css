@@ -128,3 +128,78 @@
     @apply font-sans;
   }
 }
+
+/* Landing page: flickering rocket flame */
+@keyframes rocket-flame {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.35);
+  }
+}
+.rocket-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: rocket-flame 0.18s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rocket-flame {
+    animation: none;
+  }
+}
+
+/* Landing page: logo pops out of the rocket explosion */
+@keyframes logo-pop {
+  0% { opacity: 0; transform: scale(0) rotate(-25deg); }
+  55% { opacity: 1; transform: scale(1.22) rotate(7deg); }
+  75% { transform: scale(0.93) rotate(-3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-8px) rotate(1.5deg); }
+}
+@keyframes logo-glow {
+  0% { opacity: 0; transform: scale(0.3); }
+  40% { opacity: 0.95; transform: scale(1.25); }
+  100% { opacity: 0.45; transform: scale(1); }
+}
+.logo-hidden {
+  opacity: 0;
+  transform: scale(0);
+  pointer-events: none;
+}
+.logo-pop {
+  animation: logo-pop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+.logo-float {
+  animation: logo-float 3.4s ease-in-out 1s infinite;
+}
+.logo-glow {
+  position: absolute;
+  inset: -12%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(109, 255, 210, 0.75), rgba(255, 148, 51, 0.25) 55%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+.logo-glow-on {
+  animation: logo-glow 1.3s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-hidden { opacity: 1; transform: none; pointer-events: auto; }
+  .logo-pop, .logo-float, .logo-glow-on { animation: none; }
+  .logo-glow { opacity: 0.4; }
+}
+
+/* Landing page: "About" button scrolls smoothly to the section */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
