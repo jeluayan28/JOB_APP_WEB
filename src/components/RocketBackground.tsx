@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { LOGO_TARGET_ID, ROCKET_IMPACT, ROCKET_LAUNCH, ROCKET_REPLAY } from "@/lib/rocketEvents";
+import { LOGO_TARGET_ID, ROCKET_IMPACT } from "@/lib/rocketEvents";
 
 const BASE_SPEED = 120; // px per second while wandering
 const TURN_RATE = 1.3; // radians per second while wandering, so turns stay wide and smooth
 const ATTACK_TURN_RATE = 5;
 const WANDER_MS = 4500;
-const REPLAY_WANDER_MS = 1200;
 const ATTACK_TIMEOUT_MS = 6000;
 const HIT_RADIUS = 34;
 const TRAIL_MS = 1400;
@@ -84,13 +83,13 @@ export function RocketBackground() {
 
     let phase: Phase = "wander";
     let phaseStart = performance.now();
-    let wanderMs = WANDER_MS;
+    const wanderMs = WANDER_MS;
     let x = flightWidth() * 0.15;
     let y = h * 0.7;
     let heading = -Math.PI / 4; // 0 = right, negative = up
     let speed = BASE_SPEED;
     let target = pickTarget();
-    let trail: Point[] = [];
+    const trail: Point[] = [];
     let particles: Particle[] = [];
     let blast: { x: number; y: number; t: number } | null = null;
     let impactTimer: ReturnType<typeof setTimeout> | undefined;
@@ -272,27 +271,6 @@ export function RocketBackground() {
       raf = requestAnimationFrame(frame);
     };
 
-    const replay = () => {
-      if (phase !== "done") return;
-      x = flightWidth() * 0.15;
-      y = h * 0.7;
-      heading = -Math.PI / 4;
-      speed = BASE_SPEED;
-      target = pickTarget();
-      trail = [];
-      particles = [];
-      blast = null;
-      phase = "wander";
-      wanderMs = REPLAY_WANDER_MS;
-      phaseStart = last = performance.now();
-      overlay.style.zIndex = "0";
-      rocket.style.opacity = "1";
-      placeRocket();
-      window.dispatchEvent(new Event(ROCKET_LAUNCH));
-      raf = requestAnimationFrame(frame);
-    };
-    window.addEventListener(ROCKET_REPLAY, replay);
-
     placeRocket();
     raf = requestAnimationFrame(frame);
 
@@ -300,7 +278,6 @@ export function RocketBackground() {
       cancelAnimationFrame(raf);
       clearTimeout(impactTimer);
       window.removeEventListener("resize", resize);
-      window.removeEventListener(ROCKET_REPLAY, replay);
     };
   }, []);
 
