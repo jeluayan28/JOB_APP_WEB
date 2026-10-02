@@ -9,11 +9,11 @@ export async function GET() {
   const userId = await getSessionUserId();
   if (!userId) return unauthorized();
 
-  const jobs = await db.jobApplication.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json({ jobs });
+  const [jobs, user] = await Promise.all([
+    db.jobApplication.findMany({ where: { userId }, orderBy: { createdAt: "desc" } }),
+    db.user.findUnique({ where: { id: userId }, select: { name: true } }),
+  ]);
+  return NextResponse.json({ jobs, name: user?.name ?? "" });
 }
 
 export async function POST(req: Request) {

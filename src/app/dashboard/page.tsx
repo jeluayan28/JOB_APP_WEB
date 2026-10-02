@@ -1,9 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, ExternalLink, Trash2, Pencil, MoreVertical } from "lucide-react";
+import {
+  Search,
+  ExternalLink,
+  Trash2,
+  Pencil,
+  MoreVertical,
+  Briefcase,
+  CalendarDays,
+  PartyPopper,
+  Star,
+} from "lucide-react";
 import { AddApplicationModal, EditApplicationModal } from "@/components/ui/AddApplicationModal";
 import {
   DropdownMenu,
@@ -18,6 +27,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [activeTab, setActiveTab] = useState<"ALL" | JobStatus>("ALL");
+  const [name, setName] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<JobApplication | null>(null);
@@ -31,6 +41,7 @@ export default function Dashboard() {
         if (res.status === 401) return router.replace("/?auth=login");
         const data = await res.json();
         setJobs(data.jobs);
+        setName(data.name ?? "");
       } catch {
         setError("Couldn't load your applications. Refresh to try again.");
       }
@@ -81,7 +92,29 @@ export default function Dashboard() {
     activeTab === "ALL" ? true : job.stage === activeTab
   );
 
-  const getPriorityStyle = (priority?: JobPriority) => {
+  const countOf = (stage: JobStatus) => jobs.filter((j) => j.stage === stage).length;
+
+  // Interviews dated today or later, soonest first
+  const startOfToday = new Date().setHours(0, 0, 0, 0);
+  const upcoming = jobs
+    .filter((j) => j.stage !== "REJECTED" && j.interviewDate)
+    .map((j) => ({ job: j, time: new Date(j.interviewDate!).getTime() }))
+    .filter(({ time }) => !Number.isNaN(time) && time >= startOfToday)
+    .sort((a, b) => a.time - b.time)
+    .slice(0, 4);
+  const priorityJobs = jobs.filter((j) => j.priority === "High" && j.stage !== "REJECTED").slice(0, 4);
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const firstName = name.trim().split(/\s+/)[0];
+
+  const summary = [
+    { label: "Applications", value: jobs.length, icon: Briefcase, tone: "bg-[#d9f0e1] text-emerald-800" },
+    { label: "Interviews", value: countOf("INTERVIEWING"), icon: CalendarDays, tone: "bg-[#fef3c7] text-amber-800" },
+    { label: "Offers", value: countOf("OFFERED"), icon: PartyPopper, tone: "bg-[#dbeafe] text-blue-800" },
+  ];
+
+  const getPriorityStyle =(priority?: JobPriority) => {
     switch (priority) {
       case "High":
         return "bg-rose-100 text-rose-700";
@@ -120,28 +153,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#faf7f2] font-mono text-slate-800 pb-16">
-      {/* 1. Top Image Header Banner */}
-      <div className="w-full bg-[#d3bc9d] border-b border-[#c2aa8b] overflow-hidden flex justify-center">
-        <div className="relative w-full h-48 sm:h-56 md:h-64 lg:h-72">
-          <Image
-            src="/img.png"
-            alt="Dashboard Banner"
-            fill
-            quality={100}
-            unoptimized
-            className="object-cover object-center"
-            priority
-          />
-        </div>
-      </div>
-
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-6 mt-8 space-y-6">
-        {/* Dashboard Title & Pop-Up Modal */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Job Application Dashboard
-          </h1>
+      {/* Navbar */}
+      <header className="border-b border-[#e8d8ce] bg-[#faf7f2]/90 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div>
+              <div className="text-xl font-bold tracking-tight text-slate-900">Jobbie</div>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <AddApplicationModal onAddJob={handleAddJob} />
             <button
@@ -152,10 +171,39 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
-        {error && <p className="text-xs text-rose-600">{error}</p>}
+      </header>
+
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-8 space-y-8">
+        <section>
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 text-balance">
+            {greeting}
+            {firstName ? `, ${firstName}` : ""}!
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">Here&apos;s what&apos;s happening with your job search.</p>
+        </section>
+        {error && <p role="alert" className="text-xs text-rose-600">{error}</p>}
+
+        {/* Summary */}
+        <section aria-label="Summary" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {summary.map(({ label, value, icon: Icon, tone }) => (
+            <div
+              key={label}
+              className="flex items-center gap-4 bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-4 sm:p-5 shadow-sm"
+            >
+              <span className={`inline-flex w-11 h-11 items-center justify-center rounded-xl ${tone}`}>
+                <Icon className="w-5 h-5" aria-hidden="true" />
+              </span>
+              <div>
+                <div className="text-3xl font-bold text-slate-900 leading-none">{value}</div>
+                <div className="mt-1.5 text-xs text-slate-600">{label}</div>
+              </div>
+            </div>
+          ))}
+        </section>
 
         {/* Application Tracker Card */}
-        <div className="bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-5 shadow-sm space-y-4">
+        <div className="bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-slate-900">Application tracker</h2>
             <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -208,11 +256,22 @@ export default function Dashboard() {
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
               Offered ({jobs.filter((j) => j.stage === "OFFERED").length})
             </button>
+            <button
+              onClick={() => setActiveTab("REJECTED")}
+              className={`px-2.5 py-1 rounded-md flex items-center gap-1 border ${
+                activeTab === "REJECTED"
+                  ? "bg-rose-100 text-rose-800 border-rose-300"
+                  : "bg-rose-50 text-rose-700 border-transparent"
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              Rejected ({countOf("REJECTED")})
+            </button>
           </div>
 
           {/* Borderless Table View */}
           <div className="overflow-x-auto pt-2">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[56rem] text-left text-xs border-collapse">
               <thead>
                 <tr className="text-slate-400 border-b border-[#e8d8ce]/60 pb-2">
                   <th className="py-2 px-3 font-normal">Position</th>
@@ -317,6 +376,62 @@ export default function Dashboard() {
             </table>
           </div>
         </div>
+
+        {/* Quick information */}
+        <section aria-label="Quick information" className="grid md:grid-cols-2 gap-4">
+          <div className="bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-4 sm:p-5 shadow-sm">
+            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
+              <CalendarDays className="w-4 h-4 text-amber-700" aria-hidden="true" />
+              Upcoming interviews
+            </h2>
+            {upcoming.length === 0 ? (
+              <p className="mt-4 text-xs text-slate-500">No interviews scheduled.</p>
+            ) : (
+              <ul className="mt-4 divide-y divide-[#e8d8ce]">
+                {upcoming.map(({ job, time }) => (
+                  <li key={job.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 truncate">{job.position}</div>
+                      <div className="text-slate-500 truncate">{job.company}</div>
+                    </div>
+                    <span className="shrink-0 px-2 py-0.5 rounded-md bg-[#fef3c7] text-amber-800 font-semibold">
+                      {new Date(time).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-4 sm:p-5 shadow-sm">
+            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
+              <Star className="w-4 h-4 text-amber-700" aria-hidden="true" />
+              Priority applications
+            </h2>
+            {priorityJobs.length === 0 ? (
+              <p className="mt-4 text-xs text-slate-500">No high priority applications.</p>
+            ) : (
+              <ul className="mt-4 divide-y divide-[#e8d8ce]">
+                {priorityJobs.map((job) => (
+                  <li key={job.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 truncate">{job.position}</div>
+                      <div className="text-slate-500 truncate">{job.company}</div>
+                    </div>
+                    <span className={`shrink-0 px-2 py-0.5 rounded-md font-semibold ${getStageStyle(job.stage)}`}>
+                      {job.stage}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+
+        {/* Mascot */}
+        <section className="pt-4 text-center">
+          <p className="text-sm text-slate-600">&ldquo;Keep going! ♡&rdquo;</p>
+        </section>
       </div>
 
       <EditApplicationModal job={editing} onSave={handleEdit} onClose={() => setEditing(null)} />

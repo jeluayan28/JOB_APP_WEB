@@ -26,7 +26,7 @@ export function LogoReveal() {
   return (
     <div
       id={LOGO_TARGET_ID}
-      className="relative mx-auto lg:mx-0 lg:mr-50 lg:justify-self-end w-60 sm:w-72 shrink-0"
+      className="relative mx-auto lg:mx-0 lg:mr-28 lg:justify-self-end w-60 sm:w-72 shrink-0"
     >
       <span aria-hidden="true" className={`logo-glow ${shown ? "logo-glow-on" : ""}`} />
       <button

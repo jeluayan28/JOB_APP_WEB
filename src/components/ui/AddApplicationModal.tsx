@@ -76,7 +76,7 @@ const selectTriggerClass =
 const selectContentClass =
   "bg-white border-[#e2d5cb] rounded-xl font-mono text-xs shadow-lg z-[100]";
 const dialogClass =
-  "sm:max-w-[440px] max-h-[90vh] overflow-y-auto bg-[#f5ebe6] border border-[#e8d8ce] rounded-2xl p-6 font-mono text-slate-800 shadow-xl";
+  "sm:max-w-[440px] max-h-[90vh] overflow-y-auto bg-[#f5ebe6] border border-[#e8d8ce] rounded-2xl p-4 sm:p-6 font-mono text-slate-800 shadow-xl";
 
 function JobForm({
   initial,
@@ -132,7 +132,7 @@ function JobForm({
       </div>
 
       {/* Stage & Priority Dropdowns */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
         <div className="space-y-1">
           <label className={labelClass}>Stage</label>
           <Select
@@ -223,7 +223,7 @@ function JobForm({
       </div>
 
       {/* Location & Salary */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
         <div className="space-y-1">
           <label htmlFor="location" className={labelClass}>
             Location
