@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  Briefcase,
   CalendarDays,
   ChevronDown,
   ExternalLink,
@@ -9,6 +10,7 @@ import {
   Layers,
   Link2,
   ListChecks,
+  PartyPopper,
   StickyNote,
 } from "lucide-react";
 import { getSessionUserId } from "@/lib/session";
@@ -53,9 +55,9 @@ const PREVIEW_ROWS = [
   { position: "QA Engineer", company: "Brightpath Co.", stage: STAGES[4], priority: "Low", date: "N/A", location: "Taguig", salary: "₱42,000", notes: "Rejected after final round", link: true },
 ];
 const PREVIEW_SUMMARY = [
-  { label: "Applications", value: 8, tone: "bg-[#d9f0e1] text-emerald-800" },
-  { label: "Interviews", value: 2, tone: "bg-[#fef3c7] text-amber-800" },
-  { label: "Offers", value: 1, tone: "bg-[#dbeafe] text-blue-800" },
+  { label: "Applications", value: 8, icon: Briefcase, tone: "bg-[#d9f0e1] text-emerald-800" },
+  { label: "Interviews", value: 2, icon: CalendarDays, tone: "bg-[#fef3c7] text-amber-800" },
+  { label: "Offers", value: 1, icon: PartyPopper, tone: "bg-[#dbeafe] text-blue-800" },
 ];
 
 // PSA Labor Force Survey, unemployment rate (%) by month, 2026
@@ -171,13 +173,18 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 </div>
                 <div className="p-4 sm:p-6 bg-[#faf7f2] space-y-4">
                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    {PREVIEW_SUMMARY.map((s) => (
+                    {PREVIEW_SUMMARY.map(({ label, value, icon: Icon, tone }) => (
                       <div
-                        key={s.label}
-                        className={`rounded-xl px-3 py-3 sm:px-4 sm:py-4 ${s.tone}`}
+                        key={label}
+                        className="flex items-center gap-2 sm:gap-4 bg-[#f5ebe6] border border-[#e8d8ce] rounded-xl p-3 sm:p-5 shadow-sm text-left"
                       >
-                        <div className="text-2xl sm:text-3xl font-bold leading-none">{s.value}</div>
-                        <div className="mt-1.5 text-[10px] sm:text-xs font-semibold">{s.label}</div>
+                        <span className={`hidden sm:inline-flex w-11 h-11 shrink-0 items-center justify-center rounded-xl ${tone}`}>
+                          <Icon className="w-5 h-5" aria-hidden="true" />
+                        </span>
+                        <div>
+                          <div className="text-2xl sm:text-3xl font-bold text-slate-900 leading-none">{value}</div>
+                          <div className="mt-1.5 text-[10px] sm:text-xs text-slate-600">{label}</div>
+                        </div>
                       </div>
                     ))}
                   </div>

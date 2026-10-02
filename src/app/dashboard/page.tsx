@@ -80,6 +80,7 @@ export default function Dashboard() {
   const [editing, setEditing] = useState<JobApplication | null>(null);
   const [deleting, setDeleting] = useState<JobApplication | null>(null);
   const [viewing, setViewing] = useState<JobApplication | null>(null);
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
 
   // Load this user's applications from the database
   useEffect(() => {
@@ -227,7 +228,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             <AddApplicationModal onAddJob={handleAddJob} />
             <button
-              onClick={handleLogout}
+              onClick={() => setConfirmingLogout(true)}
               className="text-xs px-3.5 py-2 rounded-lg border border-[#e2d5cb] text-slate-700 hover:bg-white/60 transition-colors cursor-pointer"
             >
               Log out
@@ -577,6 +578,32 @@ export default function Dashboard() {
               <dd className="text-slate-800 whitespace-pre-wrap break-words">{viewing.notes || "—"}</dd>
             </dl>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmingLogout} onOpenChange={setConfirmingLogout}>
+        <DialogContent className="sm:max-w-[380px] bg-[#f5ebe6] border border-[#e8d8ce] rounded-2xl p-6 font-mono text-slate-800 shadow-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-slate-900 tracking-tight">
+              Are you sure you want to log out?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setConfirmingLogout(false)}
+              className="w-1/2 bg-white/70 border border-[#e2d5cb] text-slate-700 py-2 rounded-lg text-xs font-semibold hover:bg-white transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-1/2 bg-slate-900 text-white py-2 rounded-lg text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+            >
+              Confirm
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
 
