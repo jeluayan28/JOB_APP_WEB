@@ -19,6 +19,7 @@ import { RocketBackground } from "@/components/RocketBackground";
 // Stage colours borrowed from the dashboard
 const STAGES = [
   { label: "Applied", pill: "bg-[#d9f0e1] text-emerald-800", dot: "bg-emerald-500" },
+  { label: "Shortlisted", pill: "bg-violet-100 text-violet-800", dot: "bg-violet-500" },
   { label: "Interviewing", pill: "bg-[#fef3c7] text-amber-800", dot: "bg-amber-500" },
   { label: "Offered", pill: "bg-[#dbeafe] text-blue-800", dot: "bg-blue-500" },
   { label: "Rejected", pill: "bg-rose-100 text-rose-800", dot: "bg-rose-500" },
@@ -26,14 +27,14 @@ const STAGES = [
 
 const STEPS = [
   { n: "01", title: "Apply", body: "Add each job you send out, with the company, role and link." },
-  { n: "02", title: "Track", body: "Move it through Applied, Interviewing, Offered or Rejected." },
+  { n: "02", title: "Track", body: "Move it through Applied, Shortlisted, Interviewing, Offered or Rejected." },
   { n: "03", title: "Move forward", body: "See what needs attention next and stay on top of follow-ups." },
 ];
 
 const FEATURES = [
   { icon: ListChecks, title: "Application tracking", body: "Every role you applied to, in one list you can scan in seconds." },
   { icon: CalendarDays, title: "Interview dates", body: "Note when each interview is so you never walk in unprepared." },
-  { icon: Layers, title: "Application stages", body: "Applied, Interviewing, Offered or Rejected, and filter by any of them." },
+  { icon: Layers, title: "Application stages", body: "Applied, Shortlisted, Interviewing, Offered or Rejected, and filter by any of them." },
   { icon: Link2, title: "Job links", body: "Keep the posting one click away instead of buried in an old email." },
   { icon: Flag, title: "Priority", body: "Mark the roles you want most so they never slip down the list." },
   { icon: StickyNote, title: "Notes", body: "Jot down contacts, salary talk and anything worth remembering." },
@@ -46,10 +47,10 @@ const PRIORITY_STYLE: Record<string, string> = {
   Low: "bg-slate-100 text-slate-600",
 };
 const PREVIEW_ROWS = [
-  { position: "Frontend Developer", company: "Northwind Studio", stage: STAGES[1], priority: "High", date: "Oct 8", location: "Makati, Hybrid", salary: "₱55,000", notes: "Second interview with the team lead", link: true },
+  { position: "Frontend Developer", company: "Northwind Studio", stage: STAGES[2], priority: "High", date: "Oct 8", location: "Makati, Hybrid", salary: "₱55,000", notes: "Second interview with the team lead", link: true },
   { position: "Product Designer", company: "Lumen Health", stage: STAGES[0], priority: "Medium", date: "N/A", location: "Remote", salary: "₱48,000", notes: "Sent portfolio", link: true },
-  { position: "Data Analyst", company: "Kapitan Logistics", stage: STAGES[2], priority: "High", date: "Oct 3", location: "Cebu City", salary: "₱60,000", notes: "Offer expires Oct 15", link: true },
-  { position: "QA Engineer", company: "Brightpath Co.", stage: STAGES[3], priority: "Low", date: "N/A", location: "Taguig", salary: "₱42,000", notes: "Rejected after final round", link: true },
+  { position: "Data Analyst", company: "Kapitan Logistics", stage: STAGES[3], priority: "High", date: "Oct 3", location: "Cebu City", salary: "₱60,000", notes: "Offer expires Oct 15", link: true },
+  { position: "QA Engineer", company: "Brightpath Co.", stage: STAGES[4], priority: "Low", date: "N/A", location: "Taguig", salary: "₱42,000", notes: "Rejected after final round", link: true },
 ];
 const PREVIEW_SUMMARY = [
   { label: "Applications", value: 8, tone: "bg-[#d9f0e1] text-emerald-800" },
@@ -201,9 +202,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                             <th className="py-2 px-3 font-normal">Company Name</th>
                             <th className="py-2 px-3 font-normal">Stage</th>
                             <th className="py-2 px-3 font-normal">Priority</th>
+                            <th className="py-2 px-3 font-normal">Salary</th>
                             <th className="py-2 px-3 font-normal">Interview Date</th>
                             <th className="py-2 px-3 font-normal">Location</th>
-                            <th className="py-2 px-3 font-normal">Salary</th>
                             <th className="py-2 px-3 font-normal">Notes</th>
                             <th className="py-2 px-3 font-normal">Job Link</th>
                           </tr>
@@ -223,11 +224,11 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                                   {r.priority}
                                 </span>
                               </td>
-                              <td className="py-3 px-3 text-slate-500">{r.date}</td>
-                              <td className="py-3 px-3 text-slate-700">{r.location}</td>
                               <td className="py-3 px-3 text-slate-700 whitespace-nowrap">
                                 {r.salary || <span className="text-slate-300">—</span>}
                               </td>
+                              <td className="py-3 px-3 text-slate-500">{r.date}</td>
+                              <td className="py-3 px-3 text-slate-700">{r.location}</td>
                               <td className="py-3 px-3 text-slate-600 max-w-[14rem] truncate">
                                 {r.notes || <span className="text-slate-300">—</span>}
                               </td>

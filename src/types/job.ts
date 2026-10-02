@@ -1,4 +1,4 @@
-export type JobStatus = "APPLIED" | "INTERVIEWING" | "OFFERED" | "REJECTED";
+export type JobStatus = "APPLIED" | "SHORTLISTED" | "INTERVIEWING" | "OFFERED" | "REJECTED";
 export type JobPriority = "Low" | "Medium" | "High";
 
 export interface JobApplication {

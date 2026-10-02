@@ -37,11 +37,11 @@ export const loginSchema = z.object({
 export const jobSchema = z.object({
   position: z.string().trim().min(1).max(200),
   company: z.string().trim().min(1).max(200),
-  stage: z.enum(["APPLIED", "INTERVIEWING", "OFFERED", "REJECTED"]).default("APPLIED"),
+  stage: z.enum(["APPLIED", "SHORTLISTED", "INTERVIEWING", "OFFERED", "REJECTED"]).default("APPLIED"),
   priority: z.enum(["Low", "Medium", "High"]).default("Medium"),
   interviewDate: z.string().trim().max(50).optional(),
   jobLink: z.string().trim().max(2000).optional(),
   location: z.string().trim().max(200).optional(),
-  salary: z.string().trim().max(100).optional(),
+  salary: z.string().trim().regex(/^\d*$/).max(12).optional(),
   notes: z.string().trim().max(5000).optional(),
 });

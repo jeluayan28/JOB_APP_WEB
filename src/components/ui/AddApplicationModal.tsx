@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { JobApplication, JobStatus, JobPriority } from "@/types/job";
-import { Plus } from "lucide-react";
+import { format, isValid, parse } from "date-fns";
+import { CalendarIcon, Plus } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +54,7 @@ const toValues = (job: JobApplication): FormValues => ({
   interviewDate: job.interviewDate && job.interviewDate !== "N/A" ? job.interviewDate : "",
   jobLink: job.jobLink ?? "",
   location: job.location ?? "",
-  salary: job.salary ?? "",
+  salary: (job.salary ?? "").replace(/\D/g, ""), // older free-text salaries become digits only
   notes: job.notes ?? "",
 });
 
@@ -77,6 +80,48 @@ const selectContentClass =
   "bg-white border-[#e2d5cb] rounded-xl font-mono text-xs shadow-lg z-[100]";
 const dialogClass =
   "sm:max-w-[440px] max-h-[90vh] overflow-y-auto bg-[#f5ebe6] border border-[#e8d8ce] rounded-2xl p-4 sm:p-6 font-mono text-slate-800 shadow-xl";
+
+const DATE_FORMAT = "yyyy-MM-dd";
+
+/** shadcn date picker: a Popover holding a Calendar. Value is a "yyyy-MM-dd" string, "" when empty. */
+function DatePicker({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const parsed = value ? parse(value, DATE_FORMAT, new Date()) : undefined;
+  const selected = parsed && isValid(parsed) ? parsed : undefined;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        id={id}
+        className={`${fieldClass} flex items-center justify-between text-left cursor-pointer ${
+          selected ? "" : "text-slate-400"
+        }`}
+      >
+        {selected ? format(selected, "PPP") : "Pick a date"}
+        <CalendarIcon className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-0 bg-white border-[#e2d5cb] font-mono">
+        <Calendar
+          mode="single"
+          selected={selected}
+          defaultMonth={selected}
+          onSelect={(date) => {
+            onChange(date ? format(date, DATE_FORMAT) : "");
+            setOpen(false);
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function JobForm({
   initial,
@@ -104,7 +149,7 @@ function JobForm({
       {/* Position Title */}
       <div className="space-y-1">
         <label htmlFor="position" className={labelClass}>
-          Position Title *
+          Position Title <span className="text-rose-600">*</span>
         </label>
         <input
           id="position"
@@ -119,7 +164,7 @@ function JobForm({
       {/* Company Name */}
       <div className="space-y-1">
         <label htmlFor="company" className={labelClass}>
-          Company Name *
+          Company Name <span className="text-rose-600">*</span>
         </label>
         <input
           id="company"
@@ -150,6 +195,9 @@ function JobForm({
             >
               <SelectItem value="APPLIED" className="rounded-lg cursor-pointer">
                 Applied
+              </SelectItem>
+              <SelectItem value="SHORTLISTED" className="rounded-lg cursor-pointer">
+                Shortlisted
               </SelectItem>
               <SelectItem value="INTERVIEWING" className="rounded-lg cursor-pointer">
                 Interviewing
@@ -198,12 +246,10 @@ function JobForm({
         <label htmlFor="interviewDate" className={labelClass}>
           Interview Date
         </label>
-        <input
+        <DatePicker
           id="interviewDate"
-          type="date"
           value={formData.interviewDate}
-          onChange={(e) => set("interviewDate", e.target.value)}
-          className={fieldClass}
+          onChange={(v) => set("interviewDate", v)}
         />
       </div>
 
@@ -242,9 +288,11 @@ function JobForm({
           </label>
           <input
             id="salary"
+            inputMode="numeric"
+            maxLength={12}
             value={formData.salary}
-            onChange={(e) => set("salary", e.target.value)}
-            placeholder="PHP 30,000/mo"
+            onChange={(e) => set("salary", e.target.value.replace(/\D/g, ""))}
+            placeholder="e.g. 30000"
             className={fieldClass}
           />
         </div>
@@ -293,7 +341,7 @@ export function AddApplicationModal({ onAddJob }: AddApplicationModalProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} disablePointerDismissal>
       <DialogTrigger className="flex items-center gap-1.5 bg-slate-900 text-white px-3.5 py-2 rounded-lg text-xs font-mono hover:bg-slate-800 transition-colors shadow-sm cursor-pointer">
         <Plus className="w-3.5 h-3.5" />
         Add Application
@@ -326,7 +374,7 @@ interface EditApplicationModalProps {
 
 export function EditApplicationModal({ job, onSave, onClose }: EditApplicationModalProps) {
   return (
-    <Dialog open={job !== null} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={job !== null} onOpenChange={(open) => !open && onClose()} disablePointerDismissal>
       <DialogContent className={dialogClass}>
         <DialogHeader className="border-b border-[#e8d8ce] pb-3">
           <DialogTitle className="text-lg font-bold text-slate-900 tracking-tight">
