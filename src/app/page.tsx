@@ -114,7 +114,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 and job links in one place.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <SignupCta>Start Tracking</SignupCta>
+                <SignupCta showArrow={false}>Start Tracking</SignupCta>
                 <a
                   href="#how-it-works"
                   className={`inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors ${focusRing}`}
@@ -376,7 +376,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               Ready for your next opportunity?
             </h2>
             <div className="mt-8">
-              <SignupCta>Get Started</SignupCta>
+              <SignupCta showArrow={false}>Get Started</SignupCta>
             </div>
           </section>
         </main>

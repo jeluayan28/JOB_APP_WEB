@@ -13,7 +13,15 @@ const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900";
 
 /** A landing-page button that opens the sign-up pop-up owned by <AuthButtons />. */
-export function SignupCta({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function SignupCta({
+  children,
+  className = "",
+  showArrow = true,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  showArrow?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -21,7 +29,7 @@ export function SignupCta({ children, className = "" }: { children: React.ReactN
       className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 hover:-translate-y-0.5 transition-all shadow-md cursor-pointer ${focusRing} ${className}`}
     >
       {children}
-      <ArrowRight className="w-4 h-4" aria-hidden="true" />
+      {showArrow && <ArrowRight className="w-4 h-4" aria-hidden="true" />}
     </button>
   );
 }
